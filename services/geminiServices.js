@@ -1,28 +1,30 @@
-// OVO JE TVOJA FUNKCIJA KOJA ZOVE TVOJ PROXY NA RENDER-U
-export async function sendMessageToGemini(message) {
-    try {
-        const response = await fetch("https://nesto-4uw8.onrender.com/api/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message })
-        });
+// poveži se na tvoj Render proxy
+const API_URL = "https://nesto-4uw8.onrender.com/api/chat";
 
-        const data = await response.json();
+export async function sendMessageToGemini(message, history = []) {
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: message,
+        history: history
+      })
+    });
 
-        // Google API vraća odgovor ovako:
-        const output =
-            data?.candidates?.[0]?.content?.parts?.[0]?.text ??
-            "⚠️ Greška: Nema odgovora sa servera.";
+    const data = await response.json();
 
-        return output;
-
-    } catch (err) {
-        console.error("GREŠKA u Gemini servisu:", err);
-        return "⚠️ Greška u konekciji sa serverom.";
-    }
+    // Render proxy ti vraća Google-ov JSON ovako:
+    return (
+      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "❌ Greška: Nema odgovora sa servera."
+    );
+  } catch (err) {
+    console.error("Greška u Gemini servisu:", err);
+    throw err;
+  }
 }
 
-// Chat history – ako ti treba
 export function startChatWithHistory(history = []) {
-    // nije obavezno ali ostavljam da ti ne napravi error
+  // nije ni bitno – samo snimi historiju
 }
