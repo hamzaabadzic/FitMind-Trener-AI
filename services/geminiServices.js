@@ -1,18 +1,26 @@
 import { sendToFitMind } from "../api.js";
 
-export async function startChatWithHistory(history) {
-  // Ovo ostavljamo prazno jer Render proxy ne čuva istoriju
+let chatHistory = [];
+
+// Poziv tvog Render proxy servera
+export async function sendMessageToGemini(message, history = []) {
+  try {
+    const response = await sendToFitMind(message);
+    
+    // Google API vrati format: response.candidates[0].content.parts[0].text
+    const output =
+      response?.candidates?.[0]?.content?.parts?.[0]?.text ??
+      "⚠️ Greška: Nema odgovora sa servera.";
+
+    return output;
+
+  } catch (err) {
+    console.error("Greška u Gemini servisu:", err);
+    throw err;
+  }
 }
 
-export async function sendMessageToGemini(text, history) {
-  const response = await sendToFitMind(text);
-
-  try {
-    return response.candidates?.[0]?.content?.parts?.[0]?.text || 
-           response.text || 
-           "⚠️ Greška pri obradi odgovora.";
-  } catch (err) {
-    console.error("AI parsing error:", err);
-    return "⚠️ Greška. Pokušajte ponovo.";
-  }
+// Kada se otvori nova sesija
+export function startChatWithHistory(history = []) {
+  chatHistory = history;
 }
